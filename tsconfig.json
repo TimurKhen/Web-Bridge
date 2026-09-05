@@ -1,0 +1,6 @@
+{
+  "compilerOptions": {
+    "target": "ES2020", // или ES2022 / ESNext
+    "lib": ["ES2020", "DOM"] // если разрабатываете под браузер, DOM нужен для window/document
+  }
+}
