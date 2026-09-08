@@ -1,10 +1,14 @@
-// calc.worker.ts
-self.onmessage = (event: MessageEvent) => {
-    const { action, a, b } = event.data;
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-    if (action === 'sum') {
-        // Симулируем вычисление
-        const result = a + b;
-        self.postMessage({ status: 'done', result });
+self.onmessage = async (event: MessageEvent) => {
+    const data = event.data;
+    const { action, a, b } = data;
+
+    await delay(a * b)
+
+    if (action === "sum") {
+        self.postMessage({ status: "done", result: a + b });
+    } else {
+        console.warn("[Worker] Неизвестное действие:", action);
     }
 };

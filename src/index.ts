@@ -1,30 +1,41 @@
-import { createContract } from '../lib/contract';
-import { workerTransport } from '../lib/transport';
+import {Contract, workerTransport} from "../lib/";
+import {map} from "rxjs/operators";
 
-// 1. Инициализация контракта с транспортом воркера
-const worker = new Worker(new URL('./calc.worker.ts', import.meta.url), { type: 'module' });
-const contract = new createContract(workerTransport(worker));
+import "../lib/pipes/modes";
+import "../lib/pipes/rxjs";
 
-// 2. Первый подписчик: обновляет UI
-const unsubscribeUI = contract.on((data) => {
-    console.log('UI Listener получил результат:', data.result);
+interface CalcResponse {
+    status: string;
+    result: number;
+}
+
+const worker = new Worker(new URL("./calc.worker.ts", import.meta.url), {
+    type: "module",
 });
 
-// 3. Второй подписчик: логирование метрик
-const unsubscribeLogger = contract.on((data) => {
-    console.log('[Analytics] Операция завершена со статусом:', data.status);
-});
+const contract = new Contract<CalcResponse>(workerTransport(worker));
 
-// 4. Отправляем запрос на сложение чисел в воркер
-contract.emit({
-    action: 'sum',
-    a: 40,
-    b: 2,
-});
+const subscription = contract.toObservable()
+    .pipe(map(data => data.result),)
+    .subscribe((totalSum) => {
+        console.log(`rxjs: ${totalSum}`);
+    });
 
-// 5. Отписка от событий (когда слушатель больше не нужен)
+
+contract.makeSync();
+contract.emit({action: "sum", a: 10, b: 2});
+contract.emit({action: "sum", a: 5, b: 5});
+
 setTimeout(() => {
-    unsubscribeUI(); // через возвращенную функцию
-    unsubscribeLogger();
-    console.log('UI отписан от событий');
+    contract.makeAsync();
+
+    contract.emit({action: "sum", a: 100, b: 10});
+    contract.emit({action: "sum", a: 20, b: 20});
+    contract.emit({action: "sum", a: 20, b: 20});
 }, 1000);
+
+
+setTimeout(() => {
+    subscription.unsubscribe();
+    contract.destroy();
+}, 20000);

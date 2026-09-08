@@ -1,12 +1,7 @@
-import { workerTransport } from "./transports/worker";
-
 export interface Transport {
-    send(data: any): void;
+    send(data: { 'uuid': string, 'payload': any }): void;
+
     onMessage(handler: (data: any) => void): () => void;
+
     terminate?(): void;
-}
-
-export {
-    workerTransport,
-
 }

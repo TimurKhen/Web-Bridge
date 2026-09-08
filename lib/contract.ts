@@ -1,29 +1,43 @@
-import {Transport} from "./transport";
-type Listener<T> = (data: T) => void;
+import { Transport } from "./transport";
 
-export class createContract {
-    private listeners = new Set<Listener<any>>();
+export type Listener<T = any> = (data: T) => void;
+
+export class Contract<TResponse = any> {
+    private listeners = new Set<Listener<TResponse>>();
     private transport: Transport;
 
     constructor(transport: Transport) {
         this.transport = transport;
-
-        this.transport.onMessage((data) => {
-            this.listeners.forEach((listener) => listener(data));
-        });
+        this.transport.onMessage((message) => {
+            this.notifyListeners(message);
+        } )
     }
 
-    on(listener: Listener<any>) {
+    on(listener: Listener<TResponse>): () => void {
         this.listeners.add(listener);
-
         return () => this.off(listener);
     }
 
-    off(listener: Listener<any>): void {
+    off(listener: Listener<TResponse>): void {
         this.listeners.delete(listener);
     }
 
-    emit(payload: any) {
+    emit(payload: any): void {
         this.transport.send(payload);
+    }
+
+    destroy(): void {
+        this.listeners.clear();
+        this.transport.terminate?.();
+    }
+
+    private notifyListeners(data: TResponse): void {
+        [...this.listeners].forEach((listener) => {
+            try {
+                listener(data);
+            } catch (err) {
+                console.error("[Contract] Error in listener:", err);
+            }
+        });
     }
 }
