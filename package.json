@@ -1,0 +1,42 @@
+{
+  "name": "web-bridger",
+  "version": "0.1.0",
+  "description": "Tiny, transport-agnostic pub/sub contract for messaging across iframes, Web Workers, or any custom postMessage-like channel.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run typecheck && npm run build"
+  },
+  "keywords": [
+    "postMessage",
+    "iframe",
+    "worker",
+    "messagechannel",
+    "transport",
+    "pubsub"
+  ],
+  "devDependencies": {
+    "tsup": "^8.3.5",
+    "typescript": "^5.6.3"
+  },
+  "engines": {
+    "node": ">=16"
+  }
+}
