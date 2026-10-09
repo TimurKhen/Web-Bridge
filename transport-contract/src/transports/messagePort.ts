@@ -1,4 +1,4 @@
-import {Transport} from "../transport";
+import { Transport } from "../transport";
 
 export function messagePort(iframe: HTMLIFrameElement): Transport {
     const channel = new MessageChannel();
@@ -27,8 +27,13 @@ export function messagePort(iframe: HTMLIFrameElement): Transport {
             const listener = (event: MessageEvent) => handler(event.data);
             channel.port1.onmessage = listener;
 
+            // Detach the handler only. Closing the port is terminate()'s
+            // job — a consumer that unsubscribes to swap handlers shouldn't
+            // also tear down the underlying channel.
             return () => {
-                channel.port1.close();
+                if (channel.port1.onmessage === listener) {
+                    channel.port1.onmessage = null;
+                }
             };
         },
         terminate() {
