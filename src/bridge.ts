@@ -2,35 +2,35 @@ import { Transport } from "./transport";
 
 export type Listener<T = any> = (data: T) => void;
 
-export class Bridge<TResponse = any> {
-    private listeners = new Set<Listener<TResponse>>();
+export class Bridge<TIn = any, TOut = TIn> {
+    private listeners = new Set<Listener<TIn>>();
     private transport: Transport;
     private unsubscribe: () => void;
     private destroyed = false;
 
     constructor(transport: Transport) {
         this.transport = transport;
-        this.unsubscribe = this.transport.onMessage((message) => {
+        this.unsubscribe = this.transport.onMessage((message: TIn) => {
             this.notifyListeners(message);
         });
     }
 
-    on(listener: Listener<TResponse>): () => void {
+    on(listener: Listener<TIn>): () => void {
         if (this.destroyed) {
-            console.warn("[WBridger] Cannot add a listener to a destroyed bridge");
+            console.warn("[Bridge] Cannot add a listener to a destroyed Bridge.");
             return () => {};
         }
         this.listeners.add(listener);
         return () => this.off(listener);
     }
 
-    off(listener: Listener<TResponse>): void {
+    off(listener: Listener<TIn>): void {
         this.listeners.delete(listener);
     }
 
-    emit(payload: any): void {
+    emit(payload: TOut): void {
         if (this.destroyed) {
-            console.warn("[WBridger] Cannot emit on a destroyed bridge");
+            console.warn("[Bridge] Cannot emit on a destroyed Bridge.");
             return;
         }
         this.transport.send(payload);
@@ -44,7 +44,7 @@ export class Bridge<TResponse = any> {
         this.transport.terminate?.();
     }
 
-    private notifyListeners(data: TResponse): void {
+    private notifyListeners(data: TIn): void {
         [...this.listeners].forEach((listener) => {
             try {
                 listener(data);

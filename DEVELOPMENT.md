@@ -7,7 +7,7 @@ Notes for anyone maintaining this library, not just using it.
 ```
 src/
   transport.ts            Transport interface (the contract every channel implements)
-  contract.ts              Contract — the pub/sub wrapper consumers actually use
+  bridge.ts              Contract — the pub/sub wrapper consumers actually use
   transports/
     messagePort.ts         Transport backed by an iframe MessageChannel handshake
     worker.ts               Transport backed by a Worker

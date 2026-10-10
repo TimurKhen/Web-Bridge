@@ -1,5 +1,5 @@
 export interface Transport {
-    send(data: { 'uuid': string, 'payload': any }): void;
+    send(data: any): void;
 
     onMessage(handler: (data: any) => void): () => void;
 

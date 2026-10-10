@@ -27,9 +27,6 @@ export function messagePort(iframe: HTMLIFrameElement): Transport {
             const listener = (event: MessageEvent) => handler(event.data);
             channel.port1.onmessage = listener;
 
-            // Detach the handler only. Closing the port is terminate()'s
-            // job — a consumer that unsubscribes to swap handlers shouldn't
-            // also tear down the underlying channel.
             return () => {
                 if (channel.port1.onmessage === listener) {
                     channel.port1.onmessage = null;
@@ -41,3 +38,51 @@ export function messagePort(iframe: HTMLIFrameElement): Transport {
         },
     };
 }
+
+export function acceptMessagePort(): Promise<Transport> {
+    return new Promise((resolve) => {
+        const handleHandshake = (event: MessageEvent) => {
+            if (event.data?.type === '__INIT_PORT__' && event.ports[0]) {
+                window.removeEventListener('message', handleHandshake);
+
+                const port = event.ports[0];
+
+                resolve({
+                    send(data: any) {
+                        port.postMessage(data);
+                    },
+                    onMessage(handler: (data: any) => void) {
+                        const listener = (e: MessageEvent) => handler(e.data);
+                        port.onmessage = listener;
+                        return () => { port.onmessage = null; };
+                    }
+                });
+            }
+        };
+
+        window.addEventListener('message', handleHandshake);
+    });
+}
+
+export interface Message {
+    type: string;
+    payload: any;
+}
+
+
+/**
+ * Here Message type is needed because we need to make handshake:
+ * `
+ *  type: __INIT_PORT__
+ *  payload: ''
+ * `
+ *
+ * You can make AutoHandshake by using:
+ *
+ * ``` TypeScript
+ * const transport = await acceptMessagePort();
+ * const bridge = new Bridge<Message>(transport);
+ * ```
+ *
+ * before work started
+ */

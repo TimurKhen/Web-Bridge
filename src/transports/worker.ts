@@ -23,3 +23,17 @@ export function workerTransport(worker: Worker): Transport {
         }
     };
 }
+
+export function createWorker(): Transport {
+    return {
+        send(data: any) {
+            self.postMessage(data);
+        },
+        onMessage(handler: (data: any) => void) {
+            const listener = (event: MessageEvent) => handler(event.data);
+            self.addEventListener('message', listener);
+
+            return () => self.removeEventListener('message', listener);
+        }
+    };
+}

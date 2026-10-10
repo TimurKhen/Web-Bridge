@@ -1,4 +1,4 @@
 export * from "./transport";
-export * from "./contract";
-export { messagePort } from "./transports/messagePort";
-export { workerTransport } from './transports/worker'
+export * from "./bridge";
+export { messagePort, acceptMessagePort } from "./transports/messagePort";
+export { workerTransport, createWorker } from './transports/worker'
