@@ -1,7 +1,5 @@
-export interface Transport {
-    send(data: any): void;
-
-    onMessage(handler: (data: any) => void): () => void;
-
-    terminate?(): void;
+export interface Transport<T> {
+    send(data: T): void;
+    onMessage(handler: (data: T) => void): () => void;
+    terminate(): void;
 }

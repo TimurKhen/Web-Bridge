@@ -1,6 +1,11 @@
-import { Transport } from "../transport";
+import {Transport} from "../transport";
 
-export function messagePort(iframe: HTMLIFrameElement): Transport {
+export interface Message<P = unknown> {
+    type: string;
+    payload?: P;
+}
+
+export function messagePort<T>(iframe: HTMLIFrameElement): Transport<T> {
     const channel = new MessageChannel();
     let initialized = false;
 
@@ -10,20 +15,17 @@ export function messagePort(iframe: HTMLIFrameElement): Transport {
             throw new Error("iframe.contentWindow is not accessible");
         }
 
-        iframe.contentWindow.postMessage({ type: "__INIT_PORT__" }, "*", [
-            channel.port2,
-        ]);
+        iframe.contentWindow.postMessage({type: "__INIT_PORT__"}, "*", [channel.port2,]);
         initialized = true;
     };
 
     return {
-        send(data: any) {
+        send(data: T) {
             if (!initialized) {
                 initHandshake();
             }
             channel.port1.postMessage(data);
-        },
-        onMessage(handler: (data: any) => void) {
+        }, onMessage(handler: (data: T) => void) {
             const listener = (event: MessageEvent) => handler(event.data);
             channel.port1.onmessage = listener;
 
@@ -32,29 +34,38 @@ export function messagePort(iframe: HTMLIFrameElement): Transport {
                     channel.port1.onmessage = null;
                 }
             };
-        },
-        terminate() {
+        }, terminate() {
             channel.port1.close();
         },
     };
 }
 
-export function acceptMessagePort(): Promise<Transport> {
+
+export function acceptMessagePort<T>(): Promise<Transport<T>> {
     return new Promise((resolve) => {
         const handleHandshake = (event: MessageEvent) => {
+
             if (event.data?.type === '__INIT_PORT__' && event.ports[0]) {
                 window.removeEventListener('message', handleHandshake);
 
                 const port = event.ports[0];
 
                 resolve({
-                    send(data: any) {
+                    send(data: T) {
                         port.postMessage(data);
-                    },
-                    onMessage(handler: (data: any) => void) {
+                    }, onMessage(handler: (data: T) => void) {
                         const listener = (e: MessageEvent) => handler(e.data);
                         port.onmessage = listener;
-                        return () => { port.onmessage = null; };
+
+                        return () => {
+                            if (port.onmessage === listener) {
+                                port.onmessage = null;
+                            }
+                        };
+                    },
+
+                    terminate() {
+                        port.close();
                     }
                 });
             }
@@ -63,26 +74,3 @@ export function acceptMessagePort(): Promise<Transport> {
         window.addEventListener('message', handleHandshake);
     });
 }
-
-export interface Message {
-    type: string;
-    payload: any;
-}
-
-
-/**
- * Here Message type is needed because we need to make handshake:
- * `
- *  type: __INIT_PORT__
- *  payload: ''
- * `
- *
- * You can make AutoHandshake by using:
- *
- * ``` TypeScript
- * const transport = await acceptMessagePort();
- * const bridge = new Bridge<Message>(transport);
- * ```
- *
- * before work started
- */

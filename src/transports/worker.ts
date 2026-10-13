@@ -1,12 +1,12 @@
-import {Transport} from "../transport";
+import { Transport } from "../transport";
 
-export function workerTransport(worker: Worker): Transport {
+export function workerTransport<T>(worker: Worker): Transport<T> {
     return {
-        send(data: any) {
+        send(data: T) {
             worker.postMessage(data);
         },
 
-        onMessage(handler: (data: any) => void) {
+        onMessage(handler: (data: T) => void) {
             const listener = (event: MessageEvent) => {
                 handler(event.data);
             };
@@ -24,16 +24,21 @@ export function workerTransport(worker: Worker): Transport {
     };
 }
 
-export function createWorker(): Transport {
+export function createWorker<T>(): Transport<T> {
     return {
-        send(data: any) {
+        send(data: T) {
             self.postMessage(data);
         },
-        onMessage(handler: (data: any) => void) {
+
+        onMessage(handler: (data: T) => void) {
             const listener = (event: MessageEvent) => handler(event.data);
             self.addEventListener('message', listener);
 
             return () => self.removeEventListener('message', listener);
+        },
+
+        terminate() {
+            self.close();
         }
     };
 }

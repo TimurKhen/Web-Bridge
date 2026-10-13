@@ -1,24 +1,26 @@
-import { Transport } from "./transport";
+import {Transport} from "./transport";
 
 export type Listener<T = any> = (data: T) => void;
 
 export class Bridge<TIn = any, TOut = TIn> {
     private listeners = new Set<Listener<TIn>>();
-    private transport: Transport;
+    private transport: Transport<TIn | TOut>;
     private unsubscribe: () => void;
     private destroyed = false;
 
-    constructor(transport: Transport) {
+    constructor(transport: Transport<TIn | TOut>) {
         this.transport = transport;
-        this.unsubscribe = this.transport.onMessage((message: TIn) => {
-            this.notifyListeners(message);
+
+        this.unsubscribe = this.transport.onMessage((message) => {
+            this.notifyListeners(message as TIn);
         });
     }
 
     on(listener: Listener<TIn>): () => void {
         if (this.destroyed) {
             console.warn("[Bridge] Cannot add a listener to a destroyed Bridge.");
-            return () => {};
+            return () => {
+            };
         }
         this.listeners.add(listener);
         return () => this.off(listener);
@@ -33,6 +35,7 @@ export class Bridge<TIn = any, TOut = TIn> {
             console.warn("[Bridge] Cannot emit on a destroyed Bridge.");
             return;
         }
+
         this.transport.send(payload);
     }
 
@@ -49,7 +52,7 @@ export class Bridge<TIn = any, TOut = TIn> {
             try {
                 listener(data);
             } catch (err) {
-                console.error("[WBridger] Error in listener:", err);
+                console.error("[Bridge] Error in listener:", err);
             }
         });
     }
