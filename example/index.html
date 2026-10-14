@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>web-bridger: Использование</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; }
+        .container { display: flex; gap: 20px; }
+        #logs { background: #1e1e1e; color: #00ff00; padding: 10px; border-radius: 5px; min-height: 100px; width: 400px; }
+        iframe { border: 2px dashed #ccc; border-radius: 8px; width: 400px; height: 200px; }
+    </style>
+</head>
+<body>
+<h1>Пример работы web-bridger</h1>
+
+<div class="container">
+    <div>
+        <button id="btn-worker">Отправить в Worker</button>
+        <button id="btn-iframe">Отправить в Iframe</button>
+        <pre id="logs">Ожидание сообщений...\n</pre>
+    </div>
+
+    <iframe id="target-iframe" src="iframe.html"></iframe>
+
+    <div>
+        <input id="input">
+        <p id="input-preview"></p>
+    </div>
+</div>
+
+<script type="module" src="./src/main.ts"></script>
+</body>
+</html>

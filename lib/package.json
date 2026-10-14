@@ -24,13 +24,20 @@
     "typecheck": "tsc --noEmit",
     "prepublishOnly": "npm run typecheck && npm run build"
   },
+  "author": "Timur Khen",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TimurKhen/Web-Bridge.git"
+  },
   "keywords": [
     "postMessage",
     "iframe",
     "worker",
+    "broadcast-channel",
     "messagechannel",
     "transport",
-    "pubsub"
+    "pubsub",
+    "bridge"
   ],
   "devDependencies": {
     "tsup": "^8.3.5",

@@ -1,38 +1,41 @@
-import { Transport } from "./transport";
+import {Transport} from "./transport";
 
 export type Listener<T = any> = (data: T) => void;
 
-export class Bridge<TResponse = any> {
-    private listeners = new Set<Listener<TResponse>>();
-    private transport: Transport;
+export class Bridge<TIn = any, TOut = TIn> {
+    private listeners = new Set<Listener<TIn>>();
+    private transport: Transport<TIn | TOut>;
     private unsubscribe: () => void;
     private destroyed = false;
 
-    constructor(transport: Transport) {
+    constructor(transport: Transport<TIn | TOut>) {
         this.transport = transport;
+
         this.unsubscribe = this.transport.onMessage((message) => {
-            this.notifyListeners(message);
+            this.notifyListeners(message as TIn);
         });
     }
 
-    on(listener: Listener<TResponse>): () => void {
+    on(listener: Listener<TIn>): () => void {
         if (this.destroyed) {
-            console.warn("[WBridger] Cannot add a listener to a destroyed bridge");
-            return () => {};
+            console.warn("[WebBridge] Cannot add a listener to a destroyed Bridge.");
+            return () => {
+            };
         }
         this.listeners.add(listener);
         return () => this.off(listener);
     }
 
-    off(listener: Listener<TResponse>): void {
+    off(listener: Listener<TIn>): void {
         this.listeners.delete(listener);
     }
 
-    emit(payload: any): void {
+    emit(payload: TOut): void {
         if (this.destroyed) {
-            console.warn("[WBridger] Cannot emit on a destroyed bridge");
+            console.warn("[WebBridge] Cannot emit on a destroyed Bridge.");
             return;
         }
+
         this.transport.send(payload);
     }
 
@@ -44,12 +47,12 @@ export class Bridge<TResponse = any> {
         this.transport.terminate?.();
     }
 
-    private notifyListeners(data: TResponse): void {
+    private notifyListeners(data: TIn): void {
         [...this.listeners].forEach((listener) => {
             try {
                 listener(data);
             } catch (err) {
-                console.error("[WBridger] Error in listener:", err);
+                console.error("[WebBridge] Error in listener:", err);
             }
         });
     }
