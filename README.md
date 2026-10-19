@@ -1,9 +1,10 @@
 <p align="center">
-  <img src="./lib/assets/logo.jpg" width="250" alt="web-bridger logo" />
+  <img src="https://github.com/TimurKhen/Web-Bridge/blob/main/assets/logo.jpg" width="250" alt="web-bridger logo" />
 </p>
 
 
-# web-bridger
+# web-bridger 0.1.1
+Changelog
 
 A tiny, type-safe, transport-agnostic pub/sub wrapper for messaging across an iframe, a Web Worker, tabs (`BroadcastChannel`), or any custom channel you point it at.
 
@@ -122,12 +123,20 @@ tabBridge.emit("User logged in!");
 ### Single Shared Type
 Pass one type when both sides send and receive the same format (primitives, objects, or discriminated unions):
 ```ts
-const stringBridge = new Bridge<string>(broadcast("chat"));
-stringBridge.emit("hello"); // OK
-// stringBridge.emit(123);  // TS Error!
+const typedBridge = new Bridge<number, string>(broadcast("chat"));
+
+// OK:
+typedBridge.on((message: number) => {
+    typedBridge.emit("hello");     
+})
+
+// TS Error:
+// typedBridge.on((message: string) => {
+//     typedBridge.emit(123);
+// })
 ```
 
-### Directional (Mirrored) Stream Typing
+### Mirrored Stream Typing
 When parent and child contexts have asymmetric contracts (e.g., Request $\rightarrow$ Response), pass both `<TIn, TOut>` and mirror them on the other side:
 
 ### shared-types.ts:
