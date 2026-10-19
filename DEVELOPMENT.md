@@ -58,10 +58,21 @@ Keep these rules in mind for any future change:
 4. **`workerTransport` and `broadcast` are reference implementations.**
    Both use `addEventListener`/`removeEventListener` with a named handler reference and clean up their underlying browser primitives in `terminate()`. Use them as templates when writing a new transport.
 
+## Testing
+
+```bash
+npm test              # run the Vitest suite once
+npm run test:watch    # re-run tests on change
+npm run test:coverage # run tests and enforce coverage thresholds
+npm run check         # typecheck sources + tests, then run tests
+```
+
+Tests live in `test/` and use deterministic fakes for browser APIs (`BroadcastChannel`, `MessageChannel`, `Worker`, `window`), so they run in plain Node without jsdom. CI (`.github/workflows/ci.yml`) runs the suite on every pull request to `main` on Node 22 and 24.
+
 ## Build & publish
 
 ```bash
-npm install        # installs tsup + typescript
+npm install        # installs tsup + typescript + vitest
 npm run typecheck  
 npm run build      # tsup -> dist/ (ESM + CJS + .d.ts)
 npm pack --dry-run # sanity-check exactly what will be published
