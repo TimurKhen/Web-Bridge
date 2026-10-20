@@ -1,6 +1,6 @@
 {
   "name": "web-bridger",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Tiny, transport-agnostic pub/sub contract for messaging across iframes, Web Workers, or any custom postMessage-like channel.",
   "license": "MIT",
   "type": "module",
