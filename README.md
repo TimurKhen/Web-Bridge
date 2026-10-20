@@ -3,7 +3,7 @@
 </p>
 
 
-# web-bridger 0.1.1
+# web-bridger 0.1.2
 
 A tiny, type-safe, transport-agnostic pub/sub wrapper for messaging across an iframe, a Web Worker, tabs (`BroadcastChannel`), or any custom channel you point it at.
 
