@@ -1,3 +1,6 @@
+### 0.1.2:
+Readme fix.
+
 ### 0.1.1:
 Readme update for better experience
 
